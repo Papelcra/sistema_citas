@@ -1,0 +1,19 @@
+# Entorno Virtual
+env/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Base de datos local (SQLite)
+db.sqlite3
+
+# Archivos de configuración de VS Code
+.vscode/
+
+# Media y Static (opcional, pero recomendado)
+/media
+/static
