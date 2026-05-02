@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0">Iniciar Sesión</h4>
+            </div>
+            <div class="card-body p-4">
+                
+                {# BLOQUE DE ERRORES: Esto te dirá por qué no entra #}
+                {% if form.errors %}
+                    <div class="alert alert-danger p-2 small">
+                        <ul class="mb-0">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label fw-bold">Nombre de Usuario</label>
+                        <input type="text" name="username" id="id_username" class="form-control" 
+                               placeholder="Ingresa tu usuario" required autofocus>
+                        <small class="text-muted">Nota: No uses el correo, usa el nombre de usuario.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label fw-bold">Contraseña</label>
+                        <input type="password" name="password" id="id_password" class="form-control" 
+                               placeholder="Ingresa tu clave" required>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg" style="background-color: #1E3A8A; border: none;">
+                            Entrar al Sistema
+                        </button>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="mb-1 text-muted small">¿No tienes cuenta?</p>
+                    <a href="{% url 'registro' %}" class="text-decoration-none fw-bold">Regístrate como Cliente</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <a href="{% url 'home' %}" class="text-muted text-decoration-none small">← Volver al inicio</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

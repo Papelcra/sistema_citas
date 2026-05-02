@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="p-5 mb-4 bg-light rounded-3 border">
+    <div class="container-fluid py-5 text-center">
+        <h1 class="display-5 fw-bold" style="color: #1E3A8A;">Bienvenido al Sistema de Citas</h1>
+        <p class="col-md-8 fs-4 mx-auto">Gestiona tus horarios, consulta profesionales y agenda tus citas de manera rápida y sencilla.</p>
+        <hr class="my-4">
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4 gap-3" style="background-color: #3B82F6;">Comenzar ahora</a>
+        </div>
+    </div>
+</div>
+
+<div class="row text-center">
+    <div class="col-md-4">
+        <h3>📅 Agenda</h3>
+        <p>Elige el día y la hora que mejor te convenga.</p>
+    </div>
+    <div class="col-md-4">
+        <h3>🧑‍⚕️ Profesionales</h3>
+        <p>Contamos con expertos en diversas áreas.</p>
+    </div>
+    <div class="col-md-4">
+        <h3>✅ Control</h3>
+        <p>Sigue el estado de tus citas en tiempo real.</p>
+    </div>
+</div>
+{% endblock %}

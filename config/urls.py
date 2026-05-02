@@ -1,22 +1,24 @@
-"""
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path
+from django.contrib.auth import views as auth_views
+from usuarios.views import home_redirect  # <--- Cambio aquí
+from citas.views import agendar_cita, dashboard_cliente, dashboard_profesional, dashboard_admin, cambiar_estado_cita, eliminar_cita  # <--- Asegúrate de importar todas las funciones necesarias
+from usuarios.views import RegistroClienteView, CrearProfesionalView
+from citas import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-]
+    path('', home_redirect, name='home'),
+    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('dashboard/', dashboard_cliente, name='dashboard_cliente'),
+    path('registro/', RegistroClienteView.as_view(), name='registro'),
+    path('dashboard/agendar/', agendar_cita, name='agendar_cita'),
+    path('dashboard/profesional/', dashboard_profesional, name='dashboard_profesional'), # Nueva
+    path('panel/admin/', dashboard_admin, name='dashboard_admin'),
+    path('panel/admin/crear-profesional/', CrearProfesionalView.as_view(), name='crear_profesional'),
+    path('cita/estado/<int:cita_id>/<str:nuevo_estado>/', cambiar_estado_cita, name='cambiar_estado_cita'),
+    path('cita/eliminar/<int:cita_id>/', eliminar_cita, name='eliminar_cita'),
+
+
+]   
