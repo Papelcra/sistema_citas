@@ -76,19 +76,21 @@ def agendar_cita(request):
     return render(request, 'citas/agendar.html', {'form': form})
 
 
+from django.views.decorators.http import require_POST
+
+@require_POST
+@login_required
 def cambiar_estado_cita(request, cita_id, nuevo_estado):
     cita = get_object_or_404(Cita, id=cita_id)
-    
-    # Mapeo de seguridad para asegurar que solo entren códigos válidos
+
     estados_validos = ['PEN', 'CON', 'CAN', 'FIN']
-    
+
     if nuevo_estado in estados_validos:
         if request.user.is_staff or cita.profesional.user == request.user:
             cita.estado = nuevo_estado
             cita.save()
-            
-    return redirect('dashboard_profesional')
 
+    return redirect('dashboard_profesional')
 
 def eliminar_cita(request, cita_id):
     # Buscamos la cita directamente por su ID
