@@ -48,59 +48,78 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for cita in citas %}
-                                <tr>
-                                    <td class="ps-4">
-                                        <div class="fw-bold">{{ cita.cliente.nombre }}</div>
-                                        <div class="text-muted small">ID: #{{ cita.id }}</div>
-                                    </td>
-                                    <td>
-                                        <div><i class="far fa-calendar-alt me-1"></i> {{ cita.fecha|date:"d/m/Y" }}</div>
-                                        <div class="text-muted small"><i class="far fa-clock me-1"></i> {{ cita.hora|time:"h:i A" }}</div>
-                                    </td>
-                                    <td>
+                            {% for cita in citas %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold">{{ cita.cliente.nombre }}</div>
+                                    <div class="text-muted small">ID: #{{ cita.id }}</div>
+                                </td>
+
+                                <td>
+                                    <div><i class="far fa-calendar-alt me-1"></i> {{ cita.fecha|date:"d/m/Y" }}</div>
+                                    <div class="text-muted small"><i class="far fa-clock me-1"></i> {{ cita.hora|time:"h:i A" }}</div>
+                                </td>
+
+                                <td>
+                                    {% if cita.estado == 'PEN' %}
+                                        <span class="badge bg-warning text-dark px-3">Pendiente</span>
+                                    {% elif cita.estado == 'CON' %}
+                                        <span class="badge bg-primary px-3">Confirmada</span>
+                                    {% elif cita.estado == 'FIN' %}
+                                        <span class="badge bg-success px-3">Finalizada</span>
+                                    {% elif cita.estado == 'CAN' %}
+                                        <span class="badge bg-danger px-3">Cancelada</span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+
                                         {% if cita.estado == 'PEN' %}
-                                            <span class="badge bg-warning text-dark px-3">Pendiente</span>
-                                        {% elif cita.estado == 'CON' %}
-                                            <span class="badge bg-success px-3">Confirmada</span>
-                                        {% elif cita.estado == 'FIN' %}
-                                            <span class="badge bg-info px-3">Finalizada</span>
-                                        {% elif cita.estado == 'CAN' %}
-                                            <span class="badge bg-danger px-3">Cancelada</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex justify-content-center gap-2">
-                                            {% if cita.estado == 'PEN' %}
-                                                <!-- Botón Aceptar -->
-                                                <a href="{% url 'cambiar_estado_cita' cita.id 'CON' %}" 
-                                                   class="btn btn-success btn-sm d-flex align-items-center">
-                                                    <i class="fas fa-check-circle me-1"></i> Aceptar
-                                                </a>
-                                                <!-- Botón Cancelar (Ahora visible y con color) -->
-                                                <a href="{% url 'cambiar_estado_cita' cita.id 'CAN' %}" 
-                                                   class="btn btn-outline-danger btn-sm d-flex align-items-center">
+                                            
+                                            <!-- CONFIRMAR -->
+                                            <form method="post" action="{% url 'cambiar_estado_cita' cita.id 'CON' %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-success btn-sm d-flex align-items-center">
+                                                    <i class="fas fa-check-circle me-1"></i> Confirmar
+                                                </button>
+                                            </form>
+
+                                            <!-- CANCELAR -->
+                                            <form method="post" action="{% url 'cambiar_estado_cita' cita.id 'CAN' %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btn-sm d-flex align-items-center">
                                                     <i class="fas fa-times-circle me-1"></i> Cancelar
-                                                </a>
-                                            {% elif cita.estado == 'CON' %}
-                                                <!-- Botón Finalizar -->
-                                                <a href="{% url 'cambiar_estado_cita' cita.id 'FIN' %}" 
-                                                   class="btn btn-primary btn-sm d-flex align-items-center">
-                                                    <i class="fas fa-flag-checkered me-1"></i> Finalizar Cita
-                                                </a>
-                                            {% else %}
-                                                <span class="text-muted small italic">Sin acciones</span>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted">
-                                        No hay citas en la base de datos.
-                                    </td>
-                                </tr>
-                                {% endfor %}
+                                                </button>
+                                            </form>
+
+                                        {% elif cita.estado == 'CON' %}
+
+                                            <!-- FINALIZAR -->
+                                            <form method="post" action="{% url 'cambiar_estado_cita' cita.id 'FIN' %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-primary btn-sm d-flex align-items-center">
+                                                    <i class="fas fa-flag-checkered me-1"></i> Finalizar
+                                                </button>
+                                            </form>
+
+                                        {% else %}
+
+                                            <span class="text-muted small">Sin acciones</span>
+
+                                        {% endif %}
+
+                                    </div>
+                                </td>
+                            </tr>
+
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    No hay citas en la base de datos.
+                                </td>
+                            </tr>
+                            {% endfor %}
                             </tbody>
                         </table>
                     </div>
