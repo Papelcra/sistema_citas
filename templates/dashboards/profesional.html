@@ -1,95 +1,120 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    :root {
+        --color-primario: #1E3A8A;
+        --color-secundario: #3B82F6;
+        --color-fondo: #F9FAFB;
+        --color-exito: #22C55E;
+        --color-alerta: #EF4444;
+        --color-pendiente: #F59E0B;
+    }
+    body { background-color: var(--color-fondo); font-size: 14px; color: #334155; }
+    h5, .h5 { font-size: 18px; font-weight: bold; }
+    .bg-primario-custom { background-color: var(--color-primario) !important; }
+    .card { border: none; border-radius: 12px; }
+    .badge-status { padding: 0.5em 1em; border-radius: 50px; font-weight: 600; font-size: 11px; text-transform: uppercase; }
+    
+    /* Estilo para que los botones de gestión se vean como botones reales y no líneas */
+    .btn-gestion {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        padding: 6px 12px;
+        transition: all 0.2s;
+    }
+    .btn-gestion:hover {
+        transform: translateY(-1px);
+        filter: brightness(0.9);
+    }
+</style>
+
 <div class="container-fluid mt-4">
-    <div class="row">
-        <!-- Panel Izquierdo -->
+    <div class="row px-3">
         <div class="col-md-4">
-            <div class="card text-white bg-primary mb-4 shadow border-0">
-                <div class="card-body text-center py-4">
-                    <h5 class="card-title opacity-75">Citas para Hoy</h5>
-                    <p class="display-4 fw-bold mb-0">{{ citas_hoy_count }}</p>
+            <div class="card text-white bg-primario-custom mb-4 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <h5 class="card-title opacity-75 mb-3">Citas para Hoy</h5>
+                    <p class="display-3 fw-bold mb-0">{{ citas_hoy_count }}</p>
                     <small class="text-white-50">{{ "now"|date:"d \d\e F, Y" }}</small>
                 </div>
             </div>
             
-            <div class="card shadow border-0 mb-4">
+            <div class="card shadow-sm mb-4">
                 <div class="card-body">
-                    <h6 class="text-muted fw-bold mb-3 text-uppercase small">Mi Perfil</h6>
+                    <h6 class="text-muted fw-bold mb-4 text-uppercase small">Mi Perfil Profesional</h6>
                     <div class="d-flex align-items-center">
-                        <div class="bg-light p-3 rounded-circle me-3">
-                            <i class="fas fa-user-md fa-2x text-primary"></i>
+                        <div class="p-3 rounded-circle me-3" style="background-color: #E0E7FF;">
+                            <i class="fas fa-user-md fa-2x" style="color: var(--color-primario);"></i>
                         </div>
                         <div>
-                            <h5 class="mb-0 text-capitalize">{{ request.user.username }}</h5>
-                            <p class="text-muted mb-0 small">Profesional de Salud</p>
+                            <h5 class="mb-0 text-capitalize">{{ profesional.nombre }}</h5>
+                            <p class="text-muted mb-0 small">{{ profesional.especialidad }}</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Panel Derecho: Listado -->
         <div class="col-md-8">
-            <div class="card shadow border-0">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Gestión de Próximos Pacientes</h5>
-                    <span class="badge bg-primary">{{ citas.count }} Registradas</span>
+            <div class="card shadow-sm">
+                <div class="card-header text-white d-flex justify-content-between align-items-center py-3" style="background-color: var(--color-primario); border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Agenda de Citas</h5>
+                    <span class="badge bg-light text-dark fw-bold">{{ citas.count }} Totales</span>
                 </div>
+                
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
-                                <tr>
-                                    <th class="ps-4">Paciente</th>
-                                    <th>Fecha y Hora</th>
-                                    <th>Estado</th>
-                                    <th class="text-center">Acciones Disponibles</th>
+                                <tr class="text-muted small text-uppercase">
+                                    <th class="ps-4 py-3">Paciente</th>
+                                    <th class="py-3 text-center">Fecha y Hora</th>
+                                    <th class="py-3 text-center">Estado</th>
+                                    <th class="py-3 text-center">Gestión de Cita</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for cita in citas %}
                                 <tr>
-                                    <td class="ps-4">
-                                        <div class="fw-bold">{{ cita.cliente.nombre }}</div>
-                                        <div class="text-muted small">ID: #{{ cita.id }}</div>
+                                    <td class="ps-4 py-3">
+                                        <div class="fw-bold text-dark">{{ cita.cliente.nombre }}</div>
+                                        <div class="text-muted small">ID Cita: #{{ cita.id }}</div>
                                     </td>
-                                    <td>
-                                        <div><i class="far fa-calendar-alt me-1"></i> {{ cita.fecha|date:"d/m/Y" }}</div>
-                                        <div class="text-muted small"><i class="far fa-clock me-1"></i> {{ cita.hora|time:"h:i A" }}</div>
+                                    <td class="text-center">
+                                        <div class="fw-semibold">{{ cita.fecha|date:"d/m/Y" }}</div>
+                                        <div class="text-muted small">{{ cita.hora|time:"h:i A" }}</div>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         {% if cita.estado == 'PEN' %}
-                                            <span class="badge bg-warning text-dark px-3">Pendiente</span>
+                                            <span class="badge badge-status" style="background-color: var(--color-pendiente); color: white;">Pendiente</span>
                                         {% elif cita.estado == 'CON' %}
-                                            <span class="badge bg-success px-3">Confirmada</span>
+                                            <span class="badge badge-status" style="background-color: var(--color-secundario); color: white;">Confirmada</span>
                                         {% elif cita.estado == 'FIN' %}
-                                            <span class="badge bg-info px-3">Finalizada</span>
+                                            <span class="badge badge-status" style="background-color: var(--color-exito); color: white;">Finalizada</span>
                                         {% elif cita.estado == 'CAN' %}
-                                            <span class="badge bg-danger px-3">Cancelada</span>
+                                            <span class="badge badge-status" style="background-color: var(--color-alerta); color: white;">Cancelada</span>
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
                                             {% if cita.estado == 'PEN' %}
-                                                <!-- Botón Aceptar -->
-                                                <a href="{% url 'cambiar_estado_cita' cita.id 'CON' %}" 
-                                                   class="btn btn-success btn-sm d-flex align-items-center">
-                                                    <i class="fas fa-check-circle me-1"></i> Aceptar
+                                                <a href="{% url 'cambiar_estado_cita' cita.id 'CON' %}" class="btn btn-sm btn-success btn-gestion shadow-sm">
+                                                    <i class="fas fa-check"></i> Aceptar
                                                 </a>
-                                                <!-- Botón Cancelar (Ahora visible y con color) -->
-                                                <a href="{% url 'cambiar_estado_cita' cita.id 'CAN' %}" 
-                                                   class="btn btn-outline-danger btn-sm d-flex align-items-center">
-                                                    <i class="fas fa-times-circle me-1"></i> Cancelar
+                                                <a href="{% url 'cambiar_estado_cita' cita.id 'CAN' %}" class="btn btn-sm btn-outline-danger btn-gestion shadow-sm">
+                                                    <i class="fas fa-times"></i> Rechazar
                                                 </a>
                                             {% elif cita.estado == 'CON' %}
-                                                <!-- Botón Finalizar -->
-                                                <a href="{% url 'cambiar_estado_cita' cita.id 'FIN' %}" 
-                                                   class="btn btn-primary btn-sm d-flex align-items-center">
-                                                    <i class="fas fa-flag-checkered me-1"></i> Finalizar Cita
+                                                <a href="{% url 'cambiar_estado_cita' cita.id 'FIN' %}" class="btn btn-sm text-white btn-gestion shadow-sm" style="background-color: var(--color-secundario);">
+                                                    <i class="fas fa-flag-checkered"></i> Finalizar Cita
                                                 </a>
                                             {% else %}
-                                                <span class="text-muted small italic">Sin acciones</span>
+                                                <span class="text-muted small italic">
+                                                    <i class="fas fa-lock me-1"></i> Sin acciones
+                                                </span>
                                             {% endif %}
                                         </div>
                                     </td>
@@ -97,7 +122,8 @@
                                 {% empty %}
                                 <tr>
                                     <td colspan="4" class="text-center py-5 text-muted">
-                                        No hay citas en la base de datos.
+                                        <i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i>
+                                        <p class="mb-0">No hay citas registradas en la agenda.</p>
                                     </td>
                                 </tr>
                                 {% endfor %}

@@ -1,95 +1,229 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Mi Agenda de Citas</h2>
-    <a href="{% url 'agendar_cita' %}" class="btn btn-primary shadow-sm">
-        <i class="bi bi-plus-lg"></i> + Agendar Nueva Cita
-    </a>
-</div>
+<div class="container-fluid py-5">
+    
+    <div class="row mb-5 align-items-center">
+        <div class="col-lg-8 col-md-7">
+            <h1 class="display-5 fw-bold text-dark mb-1">
+                <i class="fas fa-hospital-user text-primary me-2"></i>Mi Portal de Salud
+            </h1>
+            <p class="lead text-muted">
+                Hola, {{ user.first_name|default:"Julian" }}. Desde aquí puedes gestionar tus consultas médicas y ver tu historial.
+            </p>
+        </div>
+        <div class="col-lg-4 col-md-5 text-md-end text-start mt-3 mt-md-0">
+            <a href="{% url 'agendar_cita' %}" class="btn btn-primary btn-lg px-4 py-3 shadow border-0">
+                <i class="fas fa-calendar-plus me-2"></i>Solicitar Nueva Cita
+            </a>
+        </div>
+    </div>
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="card shadow border-0">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="ps-4">Fecha y Hora</th>
-                                <th>Profesional</th>
-                                <th>Estado</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for cita in citas %}
-                            <tr>
-                                <td class="ps-4">
-                                    <span class="fw-bold">{{ cita.fecha|date:"d/m/Y" }}</span><br>
-                                    <small class="text-muted"><i class="bi bi-clock"></i> {{ cita.hora|time:"h:i A" }}</small>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-person-badge me-2 text-primary"></i>
-                                        {{ cita.profesional.nombre }}
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <div class="card border-0 shadow-sm bg-warning bg-opacity-10 text-dark h-100">
+                <div class="card-body d-flex align-items-center p-4">
+                    <div class="rounded-circle bg-warning p-3 me-3 text-white shadow-sm">
+                        <i class="fas fa-history fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 text-muted fw-bold text-uppercase small letter-spacing-1">Por Confirmar</h6>
+                        <h2 class="mb-0 fw-bold display-6 text-warning">{{ num_pendientes }}</h2>
+                        <span class="text-muted small">Citas en espera de revisión</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm bg-success bg-opacity-10 text-dark h-100">
+                <div class="card-body d-flex align-items-center p-4">
+                    <div class="rounded-circle bg-success p-3 me-3 text-white shadow-sm">
+                        <i class="fas fa-check-double fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 text-muted fw-bold text-uppercase small letter-spacing-1">Citas Aprobadas</h6>
+                        <h2 class="mb-0 fw-bold display-6 text-success">{{ num_aprobadas }}</h2>
+                        <span class="text-muted small">Consultas médicas confirmadas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-lg border-0 overflow-hidden radius-15">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">
+                <i class="fas fa-calendar-alt text-primary me-2"></i>CRONOGRAMA DE MIS CITAS
+            </h5>
+            <div class="d-flex gap-2">
+                <span class="badge bg-primary px-3 py-2 radius-10">{{ citas|length }} Registros</span>
+                <button class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-filter me-1"></i>Filtrar
+                </button>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="tabla-principal-citas">
+                    <thead class="bg-light text-uppercase small fw-bold text-muted border-bottom">
+                        <tr>
+                            <th class="ps-4 py-3" style="width: 28%;">Fecha y Hora de Atención</th>
+                            <th class="py-3" style="width: 30%;">Profesional de Salud</th>
+                            <th class="py-3 text-center" style="width: 20%;">Estado de la Cita</th>
+                            <th class="py-3 text-center" style="width: 22%;">Gestión</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cita in citas %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="calendar-icon me-3 text-center p-2 bg-white rounded border shadow-sm">
+                                        <span class="d-block small text-danger fw-bold text-uppercase">{{ cita.fecha|date:"M" }}</span>
+                                        <span class="d-block fs-4 fw-bold text-dark">{{ cita.fecha|date:"d" }}</span>
                                     </div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill 
-                                        {% if cita.estado == 'PEN' %}bg-warning text-dark
-                                        {% elif cita.estado == 'CON' %}bg-success
-                                        {% elif cita.estado == 'CAN' %}bg-danger
-                                        {% else %}bg-info{% endif %}">
-                                        {{ cita.get_estado_display }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <!-- Botón que activa el Modal -->
-                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#deleteModal{{ cita.id }}">
-                                        <i class="bi bi-trash"></i> Cancelar
-                                    </button>
-
-                                    <!-- MODAL DE CONFIRMACIÓN (Uno por cada cita) -->
-                                    <div class="modal fade" id="deleteModal{{ cita.id }}" tabindex="-1" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content border-0 shadow">
-                                                <div class="modal-header bg-danger text-white">
-                                                    <h5 class="modal-title">¿Confirmar cancelación?</h5>
-                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body text-start p-4">
-                                                    <p class="mb-3">Estás a punto de cancelar la siguiente cita:</p>
-                                                    <div class="bg-light p-3 rounded border">
-                                                        <p class="mb-1"><strong>Doctor:</strong> {{ cita.profesional.nombre }}</p>
-                                                        <p class="mb-1"><strong>Fecha:</strong> {{ cita.fecha|date:"d/m/Y" }}</p>
-                                                        <p class="mb-0"><strong>Hora:</strong> {{ cita.hora|time:"h:i A" }}</p>
-                                                    </div>
-                                                    <p class="mt-3 text-muted small">Esta acción no se puede deshacer.</p>
-                                                </div>
-                                                <div class="modal-footer border-0">
-                                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">No, mantener cita</button>
-                                                    <a href="{% url 'eliminar_cita' cita.id %}" class="btn btn-danger px-4">Sí, cancelar cita</a>
-                                                </div>
-                                            </div>
+                                    <div>
+                                        <div class="fw-bold text-capitalize text-dark fs-6">
+                                            {{ cita.fecha|date:"l" }}, {{ cita.fecha|date:"d" }} de {{ cita.fecha|date:"F" }}
+                                        </div>
+                                        <div class="text-muted small">
+                                            <i class="far fa-clock me-1 text-primary"></i>{{ cita.hora|time:"h:i A" }}
                                         </div>
                                     </div>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center py-5 text-muted">
-                                    No tienes citas registradas. ¡Agenda tu primera cita!
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle me-3 bg-light text-primary rounded-circle d-flex align-items-center justify-content-center border" style="width: 45px; height: 45px;">
+                                        <i class="fas fa-user-md fa-lg"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark fs-6">{{ cita.profesional.nombre }}</div>
+                                        <div class="text-muted small">Especialidad: <span class="fw-medium text-uppercase text-primary" style="font-size: 0.75rem;">{{ cita.profesional.especialidad }}</span></div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="text-center">
+                                {% if cita.estado == 'PEN' %}
+                                    <span class="badge rounded-pill bg-warning text-dark px-3 py-2 border border-warning border-opacity-50">
+                                        <i class="fas fa-hourglass-half me-1"></i> Pendiente
+                                    </span>
+                                {% elif cita.estado == 'CON' %}
+                                    <span class="badge rounded-pill bg-success px-3 py-2 border border-success border-opacity-50">
+                                        <i class="fas fa-check-circle me-1"></i> Aprobada
+                                    </span>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-secondary px-3 py-2">
+                                        {{ cita.get_estado_display }}
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center">
+                                <div class="btn-group gap-1">
+                                    <button class="btn btn-sm btn-light border" title="Ver Detalles">
+                                        <i class="fas fa-eye text-muted"></i>
+                                    </button>
+                                    
+                                    {% if cita.estado == 'PEN' %}
+                                        <button type="button" 
+                                                class="btn btn-danger btn-sm px-3 fw-bold shadow-sm"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#confirmarCancelacionModal"
+                                                onclick="prepararModalCancelacion('{{ cita.profesional.nombre }}', '{{ cita.fecha|date:'d \d\e F' }}', '{% url 'eliminar_cita' cita.id %}')">
+                                            <i class="fas fa-times-circle me-1"></i> Cancelar Cita
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-light btn-sm text-muted border-0" disabled title="Esta cita no se puede cancelar">
+                                            <i class="fas fa-ban me-1"></i> Sin acciones
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 bg-light bg-opacity-50">
+                                <div class="empty-state py-4">
+                                    <i class="fas fa-calendar-minus fa-5x text-muted mb-4 opacity-25"></i>
+                                    <h4 class="text-muted fw-bold">Aún no tienes citas agendadas</h4>
+                                    <p class="text-muted mb-4 px-5">Parece que tu agenda está libre. Solicita tu primera consulta médica con nuestros profesionales calificados haciendo clic en el botón.</p>
+                                    <a href="{% url 'agendar_cita' %}" class="btn btn-primary btn-lg px-5 shadow border-0">Agendar mi primera cita</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card-footer bg-white py-3 border-top small text-muted">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    Mostrando del 1 al {{ citas|length }} de un total de {{ citas|length }} registros.
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+                    <button class="btn btn-sm btn-light border" disabled>Anterior</button>
+                    <button class="btn btn-sm btn-primary active px-3">1</button>
+                    <button class="btn btn-sm btn-light border" disabled>Siguiente</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="confirmarCancelacionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg radius-15">
+            <div class="modal-body text-center p-5">
+                <div class="text-danger mb-4">
+                    <i class="fas fa-exclamation-circle fa-5x"></i>
+                </div>
+                <h3 class="fw-bold mb-3 text-dark">¿Deseas cancelar tu cita?</h3>
+                <p class="text-muted mb-4 fs-6">
+                    Estás a punto de cancelar la cita médica con el profesional: <br>
+                    <span id="modal-nombre-prof" class="text-primary fw-bold fs-5"></span><br>
+                    programada para el día <span id="modal-fecha-cita" class="text-dark fw-bold"></span>.
+                </p>
+                
+                <div class="alert alert-warning border-0 small text-start py-2">
+                    <i class="fas fa-info-circle me-1"></i> Esta acción liberará el horario inmediatamente para que otro paciente pueda agendarlo.
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-center mt-4">
+                    <button type="button" class="btn btn-light px-4 fw-bold border" data-bs-dismiss="modal">No, regresar</button>
+                    <form id="modal-cancel-form-action" method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger px-4 fw-bold shadow-sm">Sí, cancelar cita</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transition-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .transition-hover:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    .radius-10 { border-radius: 10px; }
+    .radius-15 { border-radius: 15px; }
+    .calendar-icon { width: 60px; min-width: 60px; line-height: 1.2; }
+    .letter-spacing-1 { letter-spacing: 1px; }
+    #tabla-principal-citas thead th { border-top: none; }
+</style>
+
+<script>
+    function prepararModalCancelacion(profesional, fecha, urlAction) {
+        document.getElementById('modal-nombre-prof').innerText = profesional;
+        document.getElementById('modal-fecha-cita').innerText = fecha;
+        const formAction = document.getElementById('modal-cancel-form-action');
+        formAction.action = urlAction;
+    }
+</script>
+
 {% endblock %}

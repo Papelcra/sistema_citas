@@ -1,6 +1,8 @@
 from django import forms
 from .models import Cita
 from usuarios.models import Profesional
+from django.utils import timezone
+from datetime import time
 
 class AgendarCitaForm(forms.ModelForm):
     class Meta:
@@ -25,16 +27,30 @@ class AgendarCitaForm(forms.ModelForm):
         fecha = cleaned_data.get('fecha')
         hora = cleaned_data.get('hora')
 
+        if fecha and hora:
+            # 1. Validación: No permitir fechas pasadas
+            if fecha < timezone.now().date():
+                raise forms.ValidationError("No puedes agendar una cita en una fecha que ya pasó.")
+            
+            # 2. Validación: Horario de oficina (Ejemplo: 8 AM a 6 PM)
+            hora_inicio = time(8, 0)
+            hora_fin = time(18, 0)
+            if not (hora_inicio <= hora <= hora_fin):
+                raise forms.ValidationError("El horario de atención es de 8:00 AM a 6:00 PM.")
+
         if profesional and fecha and hora:
-            # Validación: ¿Tiene este profesional otra cita a esa misma hora y fecha?
+            # 3. Validación: Solapamiento (ya la tenías, pero asegúrate de excluir la cita actual si es edición)
             existe_cita = Cita.objects.filter(
                 profesional=profesional,
                 fecha=fecha,
                 hora=hora
-            ).exclude(estado='CAN').exists() # Ignoramos las canceladas
+            ).exclude(estado='CAN')
+            
+            if self.instance.pk: # Si estamos editando, excluimos la cita actual
+                existe_cita = existe_cita.exclude(pk=self.instance.pk)
 
-            if existe_cita:
+            if existe_cita.exists():
                 raise forms.ValidationError(
-                    f"Lo sentimos, el {profesional.nombre} ya tiene una cita programada para esa fecha y hora."
+                    f"Lo sentimos, el profesional {profesional.nombre} ya tiene una cita a esa hora."
                 )
         return cleaned_data

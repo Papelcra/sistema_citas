@@ -8,24 +8,55 @@
                 <h4 class="mb-0">Agendar Nueva Cita</h4>
             </div>
             <div class="card-body p-4">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
-                        </div>
-                    {% endif %}
-
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">{{ field.label }}</label>
-                            {{ field }}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     {% endfor %}
+                {% endif %}
+
+                <form method="post" id="form-cita">
+                    {% csrf_token %}
                     
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Profesional de Salud</label>
+                        <select name="profesional" id="id_profesional" class="form-select" required>
+                            <option value="">Seleccione un profesional...</option>
+                            {% for p in profesionales %}
+                                <option value="{{ p.id }}">{{ p.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fecha de la Cita</label>
+                        <input type="date" name="fecha" id="id_fecha" class="form-select" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Hora Disponible</label>
+                        <select name="hora" id="id_hora" class="form-select" required>
+                            <option value="">Primero seleccione fecha y profesional</option>
+                            <option value="08:00">08:00 AM</option>
+                            <option value="08:30">08:30 AM</option>
+                            <option value="09:00">09:00 AM</option>
+                            <option value="09:30">09:30 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="10:30">10:30 AM</option>
+                            <option value="14:00">02:00 PM</option>
+                            <option value="14:30">02:30 PM</option>
+                            <option value="15:00">03:00 PM</option>
+                        </select>
+                    </div>
+                    
+                    <div class="alert alert-info py-2" style="font-size: 0.9rem;">
+                        <i class="fas fa-info-circle me-1"></i> Las horas marcadas como (Ocupado) no pueden seleccionarse.
+                    </div>
+
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Confirmar Cita</button>
+                        <button type="submit" class="btn btn-primary btn-lg">Confirmar Cita</button>
                         <a href="{% url 'dashboard_cliente' %}" class="btn btn-light">Cancelar</a>
                     </div>
                 </form>
@@ -33,4 +64,47 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectProf = document.getElementById('id_profesional');
+    const inputFecha = document.getElementById('id_fecha');
+    const selectHora = document.getElementById('id_hora');
+
+    // Bloquear fechas pasadas
+    inputFecha.min = new Date().toISOString().split("T")[0];
+
+    function verificarHoras() {
+        const pId = selectProf.value;
+        const fVal = inputFecha.value;
+
+        if (pId && fVal) {
+            // Llamada a tu API (asegurate que la URL sea correcta en urls.py)
+            fetch(`/api/horas-ocupadas/?profesional_id=${pId}&fecha=${fVal}`)
+                .then(response => response.json())
+                .then(data => {
+                    const ocupadas = data.horas_ocupadas; // Ejemplo: ["08:00", "09:30"]
+                    
+                    Array.from(selectHora.options).forEach(opt => {
+                        if (opt.value === "") return;
+
+                        // Si la hora está en la lista de ocupadas, la deshabilitamos
+                        if (ocupadas.includes(opt.value)) {
+                            opt.disabled = true;
+                            opt.text = opt.value + " - (OCUPADO)";
+                            opt.style.color = "#a0a0a0";
+                        } else {
+                            opt.disabled = false;
+                            opt.text = opt.value;
+                            opt.style.color = "#000";
+                        }
+                    });
+                });
+        }
+    }
+
+    selectProf.addEventListener('change', verificarHoras);
+    inputFecha.addEventListener('change', verificarHoras);
+});
+</script>
 {% endblock %}

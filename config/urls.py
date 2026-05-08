@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from usuarios.views import home_redirect  # <--- Cambio aquí
-from citas.views import agendar_cita, dashboard_cliente, dashboard_profesional, dashboard_admin, cambiar_estado_cita, eliminar_cita  # <--- Asegúrate de importar todas las funciones necesarias
+from citas.views import agendar_cita, dashboard_cliente, dashboard_profesional, dashboard_admin, cambiar_estado_cita, eliminar_cita, obtener_horas_ocupadas  # <--- Asegúrate de importar todas las funciones necesarias
 from usuarios.views import RegistroClienteView, CrearProfesionalView
 from citas import views
 
@@ -19,6 +19,6 @@ urlpatterns = [
     path('panel/admin/crear-profesional/', CrearProfesionalView.as_view(), name='crear_profesional'),
     path('cita/estado/<int:cita_id>/<str:nuevo_estado>/', cambiar_estado_cita, name='cambiar_estado_cita'),
     path('cita/eliminar/<int:cita_id>/', eliminar_cita, name='eliminar_cita'),
-
+    path('api/horas-ocupadas/', obtener_horas_ocupadas, name='obtener_horas_ocupadas'),
 
 ]   
