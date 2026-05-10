@@ -236,3 +236,57 @@ def citas_por_fecha(request):
         'estado_display': c.get_estado_display(),
     } for c in citas]
     return JsonResponse({'citas': data, 'fecha': fecha_str})
+# ─── AGENDAR CITA DESDE PROFESIONAL ──────────────────────────────────────────
+@login_required
+def agendar_cita_profesional(request):
+    profesional = get_object_or_404(Profesional, user=request.user)
+    clientes = Cliente.objects.all().order_by('nombre')
+
+    if request.method == 'POST':
+        cliente_id = request.POST.get('cliente')
+        fecha_str = request.POST.get('fecha')
+        hora_str = request.POST.get('hora')
+
+        try:
+            hora_obj = datetime.strptime(hora_str, '%H:%M').time()
+            if hora_obj.minute not in [0, 30]:
+                messages.error(request, "Las citas deben ser en intervalos de 30 minutos.")
+                return redirect('agendar_cita_profesional')
+
+            existe = Cita.objects.filter(
+                profesional=profesional,
+                fecha=fecha_str,
+                hora=hora_str,
+                estado__in=['PEN', 'CON']
+            ).exists()
+
+            if existe:
+                messages.error(request, "Ya tienes una cita en ese horario.")
+                return redirect('agendar_cita_profesional')
+
+            Cita.objects.create(
+                cliente_id=cliente_id,
+                profesional=profesional,
+                fecha=fecha_str,
+                hora=hora_str,
+                estado='CON'
+            )
+            messages.success(request, "Cita agendada exitosamente.")
+            return redirect('dashboard_profesional')
+
+        except ValueError:
+            messages.error(request, "Error en los datos. Verifica fecha y hora.")
+            return redirect('agendar_cita_profesional')
+
+    # ← Aquí van las horas, antes del context
+    horas = []
+    for h in range(8, 18):
+        horas.append(f"{str(h).zfill(2)}:00")
+        horas.append(f"{str(h).zfill(2)}:30")
+
+    context = {
+        'profesional': profesional,
+        'clientes': clientes,
+        'horas': horas,
+    }
+    return render(request, 'citas/agendar_profesional.html', context)
