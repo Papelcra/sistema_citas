@@ -2,137 +2,355 @@
 
 {% block content %}
 <style>
-    :root {
-        --color-primario: #1E3A8A;
-        --color-secundario: #3B82F6;
-        --color-fondo: #F9FAFB;
-        --color-exito: #22C55E;
-        --color-alerta: #EF4444;
-        --color-pendiente: #F59E0B;
-    }
-    body { background-color: var(--color-fondo); font-size: 14px; color: #334155; }
-    h5, .h5 { font-size: 18px; font-weight: bold; }
-    .bg-primario-custom { background-color: var(--color-primario) !important; }
-    .card { border: none; border-radius: 12px; }
-    .badge-status { padding: 0.5em 1em; border-radius: 50px; font-weight: 600; font-size: 11px; text-transform: uppercase; }
-    
-    /* Estilo para que los botones de gestión se vean como botones reales y no líneas */
-    .btn-gestion {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-weight: 600;
-        padding: 6px 12px;
-        transition: all 0.2s;
-    }
-    .btn-gestion:hover {
-        transform: translateY(-1px);
-        filter: brightness(0.9);
-    }
+  :root {
+    --color-primario: #1E3A8A;
+    --color-secundario: #3B82F6;
+    --color-exito: #22C55E;
+    --color-alerta: #EF4444;
+    --color-pendiente: #F59E0B;
+  }
+  body { background-color: #F9FAFB; font-size: 14px; color: #334155; }
+  .card { border: none; border-radius: 12px; }
+  .badge-status { padding: 0.5em 1em; border-radius: 50px; font-weight: 600; font-size: 11px; text-transform: uppercase; }
+  .btn-gestion { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; padding: 6px 12px; transition: all 0.2s; }
+  .btn-gestion:hover { transform: translateY(-1px); filter: brightness(0.9); }
+
+  /* CALENDARIO */
+  .calendario-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-header { text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; padding: 6px 0; }
+  .cal-dia {
+    border-radius: 8px; padding: 6px 4px; text-align: center; cursor: pointer;
+    min-height: 52px; position: relative; transition: all 0.2s;
+    border: 2px solid transparent; background: #fff;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  }
+  .cal-dia:hover { border-color: var(--color-secundario); background: #EFF6FF; }
+  .cal-dia.hoy { border-color: var(--color-primario); background: #EFF6FF; }
+  .cal-dia.seleccionado { border-color: var(--color-primario); background: var(--color-primario); color: #fff; }
+  .cal-dia.seleccionado .cal-num { color: #fff !important; }
+  .cal-dia.pasado { opacity: 0.45; pointer-events: none; }
+  .cal-dia.vacio { background: transparent; cursor: default; border: none; }
+  .cal-num { font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1; }
+  .cal-dot-wrap { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
+  .cal-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-secundario); }
+  .cal-badge { background: var(--color-primario); font-size: 9px; color: #fff; border-radius: 8px; padding: 1px 4px; }
+
+  /* CITAS DEL DÍA */
+  .cita-card-dia {
+    border-left: 4px solid var(--color-secundario);
+    border-radius: 8px; background: #fff; padding: 10px 14px;
+    margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cita-card-dia.estado-PEN { border-left-color: var(--color-pendiente); }
+  .cita-card-dia.estado-CON { border-left-color: var(--color-exito); }
+  .cita-card-dia.estado-CAN { border-left-color: var(--color-alerta); opacity: 0.7; }
+  .cita-card-dia.estado-FIN { border-left-color: #94a3b8; opacity: 0.7; }
+
+  /* DISPONIBILIDAD */
+  .hora-slot { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; margin: 3px; border: 1px solid #e2e8f0; }
+  .hora-slot.ocupada { background: #FEE2E2; color: #b91c1c; border-color: #fca5a5; }
+  .hora-slot.libre { background: #DCFCE7; color: #15803d; border-color: #86efac; }
 </style>
 
-<div class="container-fluid mt-4">
-    <div class="row px-3">
-        <div class="col-md-4">
-            <div class="card text-white bg-primario-custom mb-4 shadow-sm">
-                <div class="card-body text-center py-5">
-                    <h5 class="card-title opacity-75 mb-3">Citas para Hoy</h5>
-                    <p class="display-3 fw-bold mb-0">{{ citas_hoy_count }}</p>
-                    <small class="text-white-50">{{ "now"|date:"d \d\e F, Y" }}</small>
-                </div>
-            </div>
-            
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h6 class="text-muted fw-bold mb-4 text-uppercase small">Mi Perfil Profesional</h6>
-                    <div class="d-flex align-items-center">
-                        <div class="p-3 rounded-circle me-3" style="background-color: #E0E7FF;">
-                            <i class="fas fa-user-md fa-2x" style="color: var(--color-primario);"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-0 text-capitalize">{{ profesional.nombre }}</h5>
-                            <p class="text-muted mb-0 small">{{ profesional.especialidad }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="container-fluid mt-4 px-4">
 
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header text-white d-flex justify-content-between align-items-center py-3" style="background-color: var(--color-primario); border-radius: 12px 12px 0 0;">
-                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Agenda de Citas</h5>
-                    <span class="badge bg-light text-dark fw-bold">{{ citas.count }} Totales</span>
-                </div>
-                
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr class="text-muted small text-uppercase">
-                                    <th class="ps-4 py-3">Paciente</th>
-                                    <th class="py-3 text-center">Fecha y Hora</th>
-                                    <th class="py-3 text-center">Estado</th>
-                                    <th class="py-3 text-center">Gestión de Cita</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for cita in citas %}
-                                <tr>
-                                    <td class="ps-4 py-3">
-                                        <div class="fw-bold text-dark">{{ cita.cliente.nombre }}</div>
-                                        <div class="text-muted small">ID Cita: #{{ cita.id }}</div>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="fw-semibold">{{ cita.fecha|date:"d/m/Y" }}</div>
-                                        <div class="text-muted small">{{ cita.hora|time:"h:i A" }}</div>
-                                    </td>
-                                    <td class="text-center">
-                                        {% if cita.estado == 'PEN' %}
-                                            <span class="badge badge-status" style="background-color: var(--color-pendiente); color: white;">Pendiente</span>
-                                        {% elif cita.estado == 'CON' %}
-                                            <span class="badge badge-status" style="background-color: var(--color-secundario); color: white;">Confirmada</span>
-                                        {% elif cita.estado == 'FIN' %}
-                                            <span class="badge badge-status" style="background-color: var(--color-exito); color: white;">Finalizada</span>
-                                        {% elif cita.estado == 'CAN' %}
-                                            <span class="badge badge-status" style="background-color: var(--color-alerta); color: white;">Cancelada</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex justify-content-center gap-2">
-                                            {% if cita.estado == 'PEN' %}
-                                                <a href="{% url 'cambiar_estado_cita' cita.id 'CON' %}" class="btn btn-sm btn-success btn-gestion shadow-sm">
-                                                    <i class="fas fa-check"></i> Aceptar
-                                                </a>
-                                                <a href="{% url 'cambiar_estado_cita' cita.id 'CAN' %}" class="btn btn-sm btn-outline-danger btn-gestion shadow-sm">
-                                                    <i class="fas fa-times"></i> Rechazar
-                                                </a>
-                                            {% elif cita.estado == 'CON' %}
-                                                <a href="{% url 'cambiar_estado_cita' cita.id 'FIN' %}" class="btn btn-sm text-white btn-gestion shadow-sm" style="background-color: var(--color-secundario);">
-                                                    <i class="fas fa-flag-checkered"></i> Finalizar Cita
-                                                </a>
-                                            {% else %}
-                                                <span class="text-muted small italic">
-                                                    <i class="fas fa-lock me-1"></i> Sin acciones
-                                                </span>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted">
-                                        <i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i>
-                                        <p class="mb-0">No hay citas registradas en la agenda.</p>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- HEADER -->
+  <div class="row mb-4 align-items-center">
+    <div class="col">
+      <h4 class="fw-bold text-dark mb-0">
+        <i class="fas fa-stethoscope me-2 text-primary"></i>Panel del Profesional
+      </h4>
+      <p class="text-muted mb-0 small">Bienvenido, <strong>{{ profesional.nombre }}</strong> — {{ profesional.especialidad }}</p>
     </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- COLUMNA IZQUIERDA -->
+    <div class="col-lg-4">
+
+      <!-- TARJETAS STAT -->
+      <div class="row g-3 mb-4">
+        <div class="col-6">
+          <div class="card shadow-sm text-center py-4" style="background: var(--color-primario);">
+            <p class="text-white-50 small mb-1 text-uppercase fw-bold">Hoy</p>
+            <p class="display-5 fw-bold text-white mb-0">{{ citas_hoy_count }}</p>
+            <p class="text-white-50 small mb-0">citas</p>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="card shadow-sm text-center py-4" style="background:#FFFBEB;">
+            <p class="text-muted small mb-1 text-uppercase fw-bold">Pendientes</p>
+            <p class="display-5 fw-bold mb-0" style="color:var(--color-pendiente);">{{ total_pendientes }}</p>
+            <p class="text-muted small mb-0">por revisar</p>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="card shadow-sm text-center py-3" style="background:#F0FDF4;">
+            <p class="text-muted small mb-1 text-uppercase fw-bold">Confirmadas</p>
+            <p class="display-6 fw-bold mb-0 text-success">{{ total_confirmadas }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERFIL -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h6 class="text-muted fw-bold mb-3 text-uppercase small">Mi Perfil</h6>
+          <div class="d-flex align-items-center">
+            <div class="p-3 rounded-circle me-3" style="background:#E0E7FF;">
+              <i class="fas fa-user-md fa-2x" style="color:var(--color-primario);"></i>
+            </div>
+            <div>
+              <h6 class="mb-0 text-capitalize fw-bold">{{ profesional.nombre }}</h6>
+              <p class="text-muted mb-0 small">{{ profesional.especialidad }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KAN-50: CALENDARIO -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header border-0 pb-0 pt-3 px-3">
+          <h6 class="fw-bold text-dark mb-0">
+            <i class="fas fa-calendar me-2 text-primary"></i>{{ mes_nombre|title }}
+          </h6>
+        </div>
+        <div class="card-body px-3 pt-2">
+          <div class="calendario-grid mb-1">
+            <div class="cal-header">L</div>
+            <div class="cal-header">M</div>
+            <div class="cal-header">M</div>
+            <div class="cal-header">J</div>
+            <div class="cal-header">V</div>
+            <div class="cal-header">S</div>
+            <div class="cal-header">D</div>
+          </div>
+          <div class="calendario-grid" id="calendario-grid"></div>
+        </div>
+      </div>
+
+      <!-- KAN-52: DISPONIBILIDAD -->
+      <div class="card shadow-sm">
+        <div class="card-header border-0 pt-3 px-3 pb-0">
+          <h6 class="fw-bold text-dark mb-0">
+            <i class="fas fa-clock me-2 text-primary"></i>Disponibilidad
+          </h6>
+          <small class="text-muted" id="label-disponibilidad">Selecciona un día</small>
+        </div>
+        <div class="card-body px-3 pt-2">
+          <div id="panel-disponibilidad">
+            <p class="text-muted small text-center py-3">—</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLUMNA DERECHA -->
+    <div class="col-lg-8">
+
+      <!-- KAN-51/57: CITAS DEL DÍA -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header border-0 pt-3 px-4 pb-2 d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="fw-bold text-dark mb-0">
+              <i class="fas fa-calendar-day me-2 text-primary"></i>Citas del Día
+            </h6>
+            <small class="text-muted" id="label-fecha-seleccionada">Cargando…</small>
+          </div>
+          <!-- KAN-53: botón nueva cita desde calendario -->
+          <a href="{% url 'agendar_cita' %}" class="btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus me-1"></i>Nueva Cita
+          </a>
+        </div>
+        <div class="card-body px-4" id="panel-citas-dia">
+          <div class="text-center py-4 text-muted">
+            <i class="fas fa-spinner fa-spin me-2"></i>Cargando…
+          </div>
+        </div>
+      </div>
+
+      <!-- AGENDA COMPLETA -->
+      <div class="card shadow-sm">
+        <div class="card-header text-white d-flex justify-content-between align-items-center py-3"
+             style="background:var(--color-primario); border-radius:12px 12px 0 0;">
+          <h6 class="mb-0 fw-bold"><i class="fas fa-list me-2"></i>Agenda Completa</h6>
+          <span class="badge bg-light text-dark fw-bold">{{ citas.count }} Totales</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr class="text-muted small text-uppercase">
+                  <th class="ps-4 py-3">Paciente</th>
+                  <th class="py-3 text-center">Fecha y Hora</th>
+                  <th class="py-3 text-center">Estado</th>
+                  <th class="py-3 text-center">Gestión</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cita in citas %}
+                <tr>
+                  <td class="ps-4 py-3">
+                    <div class="fw-bold text-dark">{{ cita.cliente.nombre }}</div>
+                    <div class="text-muted small">ID: #{{ cita.id }}</div>
+                  </td>
+                  <td class="text-center">
+                    <div class="fw-semibold">{{ cita.fecha|date:"d/m/Y" }}</div>
+                    <div class="text-muted small">{{ cita.hora|time:"h:i A" }}</div>
+                  </td>
+                  <td class="text-center">
+                    {% if cita.estado == 'PEN' %}
+                      <span class="badge badge-status" style="background:var(--color-pendiente);color:#fff;">Pendiente</span>
+                    {% elif cita.estado == 'CON' %}
+                      <span class="badge badge-status" style="background:var(--color-secundario);color:#fff;">Confirmada</span>
+                    {% elif cita.estado == 'FIN' %}
+                      <span class="badge badge-status" style="background:var(--color-exito);color:#fff;">Finalizada</span>
+                    {% elif cita.estado == 'CAN' %}
+                      <span class="badge badge-status" style="background:var(--color-alerta);color:#fff;">Cancelada</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <div class="d-flex justify-content-center gap-2">
+                      {% if cita.estado == 'PEN' %}
+                        <a href="{% url 'cambiar_estado_cita' cita.id 'CON' %}" class="btn btn-sm btn-success btn-gestion shadow-sm">
+                          <i class="fas fa-check"></i>Aceptar
+                        </a>
+                        <a href="{% url 'cambiar_estado_cita' cita.id 'CAN' %}" class="btn btn-sm btn-outline-danger btn-gestion shadow-sm">
+                          <i class="fas fa-times"></i>Rechazar
+                        </a>
+                      {% elif cita.estado == 'CON' %}
+                        <a href="{% url 'cambiar_estado_cita' cita.id 'FIN' %}" class="btn btn-sm text-white btn-gestion shadow-sm"
+                           style="background:var(--color-secundario);">
+                          <i class="fas fa-flag-checkered"></i>Finalizar
+                        </a>
+                      {% else %}
+                        <span class="text-muted small"><i class="fas fa-lock me-1"></i>Sin acciones</span>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4" class="text-center py-5 text-muted">
+                    <i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i>
+                    <p class="mb-0">No hay citas en la agenda.</p>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
+
+<script>
+const CITAS_POR_DIA = {{ citas_por_dia_json|safe }};
+const HORAS_OCUPADAS = {{ horas_ocupadas_json|safe }};
+const HOY_ISO = "{{ hoy_iso }}";
+
+const TODAS_HORAS = [];
+for (let h = 8; h < 18; h++) {
+  TODAS_HORAS.push(String(h).padStart(2,'0') + ':00');
+  TODAS_HORAS.push(String(h).padStart(2,'0') + ':30');
+}
+
+function renderCalendario() {
+  const grid = document.getElementById('calendario-grid');
+  grid.innerHTML = '';
+  const hoyDate = new Date(HOY_ISO + 'T00:00:00');
+  const primerDia = new Date(hoyDate.getFullYear(), hoyDate.getMonth(), 1);
+  const ultimoDia = new Date(hoyDate.getFullYear(), hoyDate.getMonth() + 1, 0).getDate();
+
+  let offset = primerDia.getDay();
+  if (offset === 0) offset = 6; else offset -= 1;
+
+  for (let i = 0; i < offset; i++) {
+    const v = document.createElement('div');
+    v.className = 'cal-dia vacio';
+    grid.appendChild(v);
+  }
+
+  for (let d = 1; d <= ultimoDia; d++) {
+    const mes = String(hoyDate.getMonth() + 1).padStart(2, '0');
+    const dia = String(d).padStart(2, '0');
+    const fechaIso = hoyDate.getFullYear() + '-' + mes + '-' + dia;
+    const numCitas = (CITAS_POR_DIA[fechaIso] || []).length;
+    const esHoy = fechaIso === HOY_ISO;
+    const fechaDate = new Date(fechaIso + 'T00:00:00');
+    const pasado = fechaDate < new Date(HOY_ISO + 'T00:00:00');
+
+    const div = document.createElement('div');
+    div.className = 'cal-dia' + (esHoy ? ' hoy' : '') + (pasado ? ' pasado' : '');
+    div.dataset.fecha = fechaIso;
+
+    let dots = '';
+    if (numCitas === 1) dots = '<div class="cal-dot-wrap"><span class="cal-dot"></span></div>';
+    else if (numCitas > 1) dots = '<div class="cal-dot-wrap"><span class="cal-dot"></span><span class="cal-badge">+' + numCitas + '</span></div>';
+
+    div.innerHTML = '<span class="cal-num">' + d + '</span>' + dots;
+    div.addEventListener('click', function() { seleccionarDia(fechaIso, div); });
+    grid.appendChild(div);
+  }
+}
+
+function seleccionarDia(fechaIso, el) {
+  document.querySelectorAll('.cal-dia.seleccionado').forEach(function(e) { e.classList.remove('seleccionado'); });
+  el.classList.add('seleccionado');
+  renderCitasDia(fechaIso);
+  renderDisponibilidad(fechaIso);
+}
+
+function renderCitasDia(fechaIso) {
+  const panel = document.getElementById('panel-citas-dia');
+  const label = document.getElementById('label-fecha-seleccionada');
+  const citas = CITAS_POR_DIA[fechaIso] || [];
+  const partes = fechaIso.split('-');
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  label.textContent = parseInt(partes[2]) + ' de ' + meses[parseInt(partes[1]) - 1] + ' de ' + partes[0];
+
+  if (citas.length === 0) {
+    panel.innerHTML = '<div class="text-center py-4 text-muted"><i class="fas fa-calendar-times fa-2x mb-2 opacity-25"></i><p class="mb-0">No hay citas para este día.</p></div>';
+    return;
+  }
+
+  const colores = { PEN: 'estado-PEN', CON: 'estado-CON', CAN: 'estado-CAN', FIN: 'estado-FIN' };
+  const etiquetas = {
+    PEN: '<span class="badge" style="background:#F59E0B;color:#fff;font-size:10px;">Pendiente</span>',
+    CON: '<span class="badge bg-success" style="font-size:10px;">Confirmada</span>',
+    CAN: '<span class="badge bg-danger" style="font-size:10px;">Cancelada</span>',
+    FIN: '<span class="badge bg-secondary" style="font-size:10px;">Finalizada</span>'
+  };
+
+  panel.innerHTML = citas.map(function(c) {
+    return '<div class="cita-card-dia ' + (colores[c.estado] || '') + '">' +
+      '<div><span class="fw-bold text-dark">' + c.hora + '</span>' +
+      '<span class="ms-2 text-muted">—</span>' +
+      '<span class="ms-2 fw-semibold">' + c.paciente + '</span></div>' +
+      '<div>' + (etiquetas[c.estado] || c.estado) + '</div></div>';
+  }).join('');
+}
+
+function renderDisponibilidad(fechaIso) {
+  const panel = document.getElementById('panel-disponibilidad');
+  const label = document.getElementById('label-disponibilidad');
+  const ocupadas = HORAS_OCUPADAS[fechaIso] || [];
+  label.textContent = 'Horarios para el ' + fechaIso;
+  panel.innerHTML = TODAS_HORAS.map(function(h) {
+    const ocupada = ocupadas.indexOf(h) !== -1;
+    return '<span class="hora-slot ' + (ocupada ? 'ocupada' : 'libre') + '">' + h + ' ' + (ocupada ? '🔴' : '🟢') + '</span>';
+  }).join('');
+}
+
+renderCalendario();
+const elHoy = document.querySelector('.cal-dia[data-fecha="' + HOY_ISO + '"]');
+if (elHoy) seleccionarDia(HOY_ISO, elHoy);
+else { renderCitasDia(HOY_ISO); renderDisponibilidad(HOY_ISO); }
+</script>
 {% endblock %}
