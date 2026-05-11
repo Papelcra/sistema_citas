@@ -5,11 +5,11 @@ set -o errexit
 # Instalar dependencias
 pip install -r requirements.txt
 
-# Recolectar archivos estáticos
+# Recolectar estáticos
 python manage.py collectstatic --no-input
 
-# Aplicar migraciones de la base de datos
+# ESTA ES LA LÍNEA CLAVE: Crear las tablas en Render
 python manage.py migrate
 
-# CREAR EL SUPERUSUARIO AUTOMÁTICAMENTE
+# Crear el superusuario (el script que hicimos antes)
 python create_admin.py
