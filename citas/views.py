@@ -41,31 +41,57 @@ def dashboard_cliente(request):
 def agendar_cita(request):
     # Obtener el perfil del cliente
     perfil_cliente = get_object_or_404(Cliente, email=request.user.email)
+    profesionales = Profesional.objects.all()
 
     if request.method == 'POST':
         profesional_id = request.POST.get('profesional')
         fecha_str = request.POST.get('fecha')
         hora_str = request.POST.get('hora')
-        
-        # Lógica de validación de horarios y solapamiento...
-        # (Aquí va el código que ya tienes para guardar la cita)
-        
-        Cita.objects.create(
-            cliente=perfil_cliente, 
-            profesional_id=profesional_id,
-            fecha=fecha_str,
-            hora=hora_str,
-            estado='PEN'
-        )
-        messages.success(request, "Cita solicitada exitosamente.")
-        return redirect('dashboard_cliente') # Redirige al dashboard tras agendar
+
+        # 1. VALIDACIÓN CONTRA EL ERROR 'None' (image_729a7d.png)
+        # Si el usuario no seleccionó algo, evitamos que strptime falle
+        if not profesional_id or not fecha_str or not hora_str:
+            messages.error(request, "Por favor, complete todos los campos del formulario.")
+            return render(request, 'citas/agendar.html', {'profesionales': profesionales})
+
+        try:
+            # 2. VALIDACIÓN DE SOLAPAMIENTO (Doble check de seguridad)
+            # Aunque el HTML lo bloquee, validamos aquí por si acaso
+            existe_cita = Cita.objects.filter(
+                profesional_id=profesional_id,
+                fecha=fecha_str,
+                hora=hora_str
+            ).exists()
+
+            if existe_cita:
+                # Muestra el mensaje que vimos en tus capturas (image_728050.png)
+                messages.error(request, "El profesional ya tiene una cita en ese horario.")
+                return render(request, 'citas/agendar.html', {'profesionales': profesionales})
+
+            # 3. CREACIÓN DE LA CITA
+            # Convertimos strings a objetos date/time si tu modelo lo requiere
+            # o los pasamos directo si son CharFields/DateFields
+            Cita.objects.create(
+                cliente=perfil_cliente, 
+                profesional_id=profesional_id,
+                fecha=fecha_str,
+                hora=hora_str,
+                estado='PEN'
+            )
+            
+            messages.success(request, "Cita solicitada exitosamente.")
+            return redirect('dashboard_cliente')
+
+        except Exception as e:
+            # Captura cualquier otro error inesperado para que no salga la pantalla amarilla
+            messages.error(request, f"Ocurrió un error al procesar la cita: {e}")
+            return render(request, 'citas/agendar.html', {'profesionales': profesionales})
     
-    # IMPORTANTE: Aquí enviamos al archivo que mencionaste
+    # Contexto para cargar el formulario inicialmente
     context = {
-        'profesionales': Profesional.objects.all(),
+        'profesionales': profesionales,
     }
     return render(request, 'citas/agendar.html', context)
-
 
 # DASHBOARD DEL PROFESIONAL
 @login_required
