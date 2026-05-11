@@ -1,0 +1,23 @@
+services:
+  # Configuración del Servicio Web
+  - type: web
+    name: sistema-citas-web
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application" # Ajusta 'config' al nombre de tu carpeta de proyecto
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.2 # La versión que estás usando según tus capturas
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings # Ajusta según tu estructura
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
+
+  # Configuración de la Base de Datos
+  - type: database
+    name: sistema-citas-db
+    databaseName: citas_db
+    user: julian # Tu nombre de usuario para la DB
+    plan: free # Capa gratuita
