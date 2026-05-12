@@ -1,20 +1,132 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-4">
+<style>
+    :root {
+        --admin-success: #10B981;
+        --admin-dark: #064E3B;
+    }
+
+    .admin-card {
+        border-radius: 15px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
+    }
+
+    .admin-header {
+        background: var(--admin-success);
+        padding: 1.5rem;
+        color: white;
+    }
+
+    /* Estilo para los campos del formulario */
+    input, select, textarea {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        color: #374151;
+        background-color: #fff;
+        border: 1px solid #D1D5DB;
+        border-radius: 8px !important;
+        transition: all 0.2s;
+        margin-bottom: 0.5rem;
+    }
+
+    input:focus, select:focus {
+        border-color: var(--admin-success);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        outline: none;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: var(--admin-dark);
+        margin-bottom: 0.4rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-save {
+        background-color: var(--admin-success);
+        border: none;
+        color: white;
+        padding: 0.8rem;
+        font-weight: 600;
+        border-radius: 8px;
+    }
+
+    .btn-save:hover {
+        background-color: #059669;
+        transform: translateY(-1px);
+    }
+
+    .info-badge {
+        background-color: #ECFDF5;
+        color: #065F46;
+        padding: 1rem;
+        border-radius: 10px;
+        border-left: 4px solid var(--admin-success);
+    }
+</style>
+
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow border-0">
-                <div class="card-header bg-primary text-white py-3">
-                    <h5 class="mb-0">Registrar Nuevo Médico/Profesional</h5>
+        <div class="col-lg-7">
+            
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard_admin' %}" class="text-decoration-none">Panel Admin</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Alta de Profesional</li>
+                </ol>
+            </nav>
+
+            <div class="card admin-card animate__animated animate__fadeIn">
+                <div class="admin-header d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-user-shield fa-2x"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 fw-bold">Registro de Profesional</h4>
+                        <p class="small mb-0 opacity-90">Gestión de talento médico</p>
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <form method="post">
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="info-badge mb-4 small">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Al registrar un nuevo profesional, el sistema le asignará automáticamente un acceso y se reflejará en la lista de especialistas disponibles para los pacientes.
+                    </div>
+
+                    <form method="post" class="needs-validation">
                         {% csrf_token %}
-                        {{ form.as_p }}
+                        
+                        <div class="row">
+                            {% for field in form %}
+                                <div class="col-12 mb-3 form-group">
+                                    <label for="{{ field.id_for_label }}">
+                                        {{ field.label }}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <div class="form-text small opacity-75">{{ field.help_text|safe }}</div>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="fas fa-exclamation-triangle me-1"></i> {{ field.errors|first }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-success">Guardar y Crear Acceso</button>
-                            <a href="{% url 'dashboard_admin' %}" class="btn btn-light">Cancelar</a>
+                            <button type="submit" class="btn btn-save shadow-sm">
+                                <i class="fas fa-save me-2"></i>Guardar y Habilitar Profesional
+                            </button>
+                            <a href="{% url 'dashboard_admin' %}" class="btn btn-link text-muted text-decoration-none text-center small mt-2">
+                                <i class="fas fa-times me-1"></i> Descartar cambios
+                            </a>
                         </div>
                     </form>
                 </div>

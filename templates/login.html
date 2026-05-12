@@ -1,26 +1,82 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-4">
-        <div class="card shadow border-0">
-            <div class="card-header bg-primary text-white text-center py-3">
-                <h4 class="mb-0">Iniciar Sesión</h4>
+<style>
+    /* Fondo con temática médica suave */
+    body {
+        background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), 
+                    url('https://img.freepik.com/free-photo/blur-hospital_1203-7956.jpg?t=st=1715462000~exp=1715465600~hmac=medical-background');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+
+    .login-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .login-card {
+        border-radius: 20px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+    }
+
+    .login-header {
+        background: #1E3A8A; /* El azul oscuro que manejas */
+        padding: 2.5rem 1rem;
+        color: white;
+    }
+
+    .login-header i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e0e7ff;
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25 remote rgba(59, 130, 246, 0.25);
+        border-color: #3B82F6;
+    }
+
+    .btn-login {
+        background: #1E3A8A;
+        border: none;
+        border-radius: 10px;
+        padding: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-login:hover {
+        background: #3B82F6;
+        transform: translateY(-2px);
+    }
+</style>
+
+<div class="login-container">
+    <div class="col-md-5 col-lg-4 animate__animated animate__zoomIn">
+        <div class="card login-card">
+            <div class="login-header text-center">
+                <i class="fas fa-user-md"></i>
+                <h3 class="fw-bold mb-0">Gestión de Citas</h3>
+                <p class="small opacity-75 mb-0">Acceso al portal de salud</p>
             </div>
-            <div class="card-body p-4">
-                
-                {# BLOQUE DE ERRORES: Esto te dirá por qué no entra #}
+
+            <div class="card-body p-4 p-md-5">
                 {% if form.errors %}
-                    <div class="alert alert-danger p-2 small">
+                    <div class="alert alert-danger p-3 small border-0 shadow-sm" style="border-radius: 10px;">
                         <ul class="mb-0">
-                            {% for field in form %}
-                                {% for error in field.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                            {% endfor %}
-                            {% for error in form.non_field_errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
+                            {% for field in form %}{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}{% endfor %}
+                            {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
                         </ul>
                     </div>
                 {% endif %}
@@ -28,37 +84,48 @@
                 <form method="post">
                     {% csrf_token %}
                     
-                    <div class="mb-3">
-                        <label for="id_username" class="form-label fw-bold">Nombre de Usuario</label>
-                        <input type="text" name="username" id="id_username" class="form-control" 
-                               placeholder="Ingresa tu usuario" required autofocus>
-                        <small class="text-muted">Nota: No uses el correo, usa el nombre de usuario.</small>
+                    <div class="mb-4">
+                        <label for="id_username" class="form-label small fw-bold text-muted text-uppercase">Nombre de Usuario</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0" style="border-radius: 10px 0 0 10px;">
+                                <i class="fas fa-user text-primary"></i>
+                            </span>
+                            <input type="text" name="username" id="id_username" class="form-control border-start-0" 
+                                   placeholder="Tu usuario" required autofocus style="border-radius: 0 10px 10px 0;">
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="id_password" class="form-label fw-bold">Contraseña</label>
-                        <input type="password" name="password" id="id_password" class="form-control" 
-                               placeholder="Ingresa tu clave" required>
+                    <div class="mb-4">
+                        <label for="id_password" class="form-label small fw-bold text-muted text-uppercase">Contraseña</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0" style="border-radius: 10px 0 0 10px;">
+                                <i class="fas fa-lock text-primary"></i>
+                            </span>
+                            <input type="password" name="password" id="id_password" class="form-control border-start-0" 
+                                   placeholder="••••••••" required style="border-radius: 0 10px 10px 0;">
+                        </div>
                     </div>
 
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg" style="background-color: #1E3A8A; border: none;">
-                            Entrar al Sistema
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-login text-white shadow">
+                            Iniciar Sesión <i class="fas fa-arrow-right ms-2"></i>
                         </button>
                     </div>
                 </form>
 
-                <hr class="my-4">
-
-                <div class="text-center">
-                    <p class="mb-1 text-muted small">¿No tienes cuenta?</p>
-                    <a href="{% url 'registro' %}" class="text-decoration-none fw-bold">Regístrate como Cliente</a>
+                <div class="mt-5 text-center">
+                    <p class="mb-2 text-muted small">¿Aún no tienes una cuenta?</p>
+                    <a href="{% url 'registro' %}" class="btn btn-outline-primary btn-sm px-4" style="border-radius: 8px;">
+                        Regístrate como Cliente
+                    </a>
                 </div>
             </div>
         </div>
         
-        <div class="text-center mt-3">
-            <a href="{% url 'home' %}" class="text-muted text-decoration-none small">← Volver al inicio</a>
+        <div class="text-center mt-4">
+            <a href="{% url 'home' %}" class="text-muted text-decoration-none small opacity-75">
+                <i class="fas fa-chevron-left me-1"></i> Volver a la página principal
+            </a>
         </div>
     </div>
 </div>

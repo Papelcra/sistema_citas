@@ -1,35 +1,119 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow border-0">
-            <div class="card-header bg-primary text-white text-center py-3">
-                <h4 class="mb-0">Crear Cuenta de Cliente</h4>
+<style>
+    .register-card {
+        border-radius: 20px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .register-header {
+        background: #1E3A8A; /* Azul oscuro consistente */
+        padding: 2rem 1rem;
+        color: white;
+    }
+
+    /* Estilizar los inputs que Django genera automáticamente */
+    input, select, textarea {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        appearance: none;
+        border-radius: 10px !important;
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
+
+    input:focus {
+        border-color: #3B82F6;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+    }
+
+    .btn-register {
+        background: #3B82F6;
+        border: none;
+        border-radius: 10px;
+        padding: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-register:hover {
+        background: #1E3A8A;
+        transform: translateY(-2px);
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+<div class="row justify-content-center py-5">
+    <div class="col-lg-8 col-xl-7">
+        <div class="card register-card animate__animated animate__fadeInUp">
+            <div class="register-header text-center">
+                <i class="fas fa-user-plus fa-3x mb-3"></i>
+                <h3 class="fw-bold mb-0">Crear Cuenta de Paciente</h3>
+                <p class="small opacity-75 mb-0">Únete a nuestro sistema de gestión de salud</p>
             </div>
-            <div class="card-body p-4">
-                <form method="post">
+
+            <div class="card-body p-4 p-md-5">
+                <form method="post" class="needs-validation">
                     {% csrf_token %}
                     
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                                <div class="text-danger small">{{ field.errors|first }}</div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
+                    <div class="row">
+                        {% for field in form %}
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-chevron-right me-1 small text-primary"></i> {{ field.label }}
+                                </label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text small" style="font-size: 0.75rem;">{{ field.help_text|safe }}</div>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="text-danger mt-1" style="font-size: 0.8rem;">
+                                        <i class="fas fa-exclamation-circle me-1"></i> {{ field.errors|first }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
                     
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">Registrarme</button>
+                        <button type="submit" class="btn btn-primary btn-lg btn-register shadow">
+                            Finalizar Registro <i class="fas fa-check-circle ms-2"></i>
+                        </button>
                     </div>
                 </form>
-                <hr>
-                <p class="text-center mb-0">
-                    ¿Ya tienes una cuenta? <a href="{% url 'login' %}" class="text-decoration-none">Inicia sesión aquí</a>
-                </p>
+
+                <div class="mt-5 text-center border-top pt-4">
+                    <p class="text-muted small">¿Ya eres parte de nosotros?</p>
+                    <a href="{% url 'login' %}" class="btn btn-outline-dark px-4 btn-sm" style="border-radius: 8px;">
+                        Iniciar Sesión
+                    </a>
+                </div>
             </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{% url 'home' %}" class="text-muted text-decoration-none small opacity-75">
+                <i class="fas fa-house-medical me-1"></i> Volver al inicio
+            </a>
         </div>
     </div>
 </div>

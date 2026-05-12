@@ -1,29 +1,92 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="p-5 mb-4 bg-light rounded-3 border">
-    <div class="container-fluid py-5 text-center">
-        <h1 class="display-5 fw-bold" style="color: #1E3A8A;">Bienvenido al Sistema de Citas</h1>
-        <p class="col-md-8 fs-4 mx-auto">Gestiona tus horarios, consulta profesionales y agenda tus citas de manera rápida y sencilla.</p>
-        <hr class="my-4">
-        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-            <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4 gap-3" style="background-color: #3B82F6;">Comenzar ahora</a>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #f8faff 0%, #e0e7ff 100%);
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+    }
+    .medical-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+    }
+    .medical-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    }
+    .icon-box {
+        width: 60px;
+        height: 60px;
+        background: #3B82F6;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        margin: 0 auto 20px;
+        font-size: 1.5rem;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="hero-section p-5 mb-5 shadow-sm animate__animated animate__fadeIn">
+        <div class="row align-items-center">
+            <div class="col-lg-7 text-start">
+                <h1 class="display-4 fw-bold mb-3" style="color: #1E3A8A;">
+                    Tu salud, <br><span style="color: #3B82F6;">nuestra prioridad.</span>
+                </h1>
+                <p class="fs-5 text-muted mb-4">
+                    Accede a una red de profesionales calificados y gestiona tus citas médicas 
+                    con la tecnología. Rápido, seguro y sin filas.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-5 py-3 shadow" style="background-color: #3B82F6; border-radius: 10px;">
+                        <i class="fas fa-calendar-check me-2"></i>Agendar Cita
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block animate__animated animate__zoomIn">
+                <i class="fas fa-user-md fa-10x text-primary opacity-25"></i>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="row text-center">
-    <div class="col-md-4">
-        <h3>📅 Agenda</h3>
-        <p>Elige el día y la hora que mejor te convenga.</p>
-    </div>
-    <div class="col-md-4">
-        <h3>🧑‍⚕️ Profesionales</h3>
-        <p>Contamos con expertos en diversas áreas.</p>
-    </div>
-    <div class="col-md-4">
-        <h3>✅ Control</h3>
-        <p>Sigue el estado de tus citas en tiempo real.</p>
+    <div class="row g-4 text-center mt-2" id="servicios">
+        <div class="col-md-4 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+            <div class="card medical-card shadow-sm h-100 p-4">
+                <div class="icon-box">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h4 class="fw-bold" style="color: #1E3A8A;">Agenda Flexible</h4>
+                <p class="text-muted">Visualiza disponibilidad en tiempo real y reserva en segundos.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+            <div class="card medical-card shadow-sm h-100 p-4">
+                <div class="icon-box" style="background-color: #10B981;">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <h4 class="fw-bold" style="color: #1E3A8A;">Especialistas</h4>
+                <p class="text-muted">Médicos verificados listos para brindarte la mejor atención.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 animate__animated animate__fadeInUp" style="animation-delay: 0.6s;">
+            <div class="card medical-card shadow-sm h-100 p-4">
+                <div class="icon-box" style="background-color: #F59E0B;">
+                    <i class="fas fa-notes-medical"></i>
+                </div>
+                <h4 class="fw-bold" style="color: #1E3A8A;">Seguimiento</h4>
+                <p class="text-muted">Consulta el historial y estado de tus citas desde tu perfil.</p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
