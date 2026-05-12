@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5" style="max-width:600px;">
+  <div class="card border-0 shadow-lg" style="border-radius:16px;">
+    <div class="card-header border-0 py-4 px-4" style="background:#1E3A8A; border-radius:16px 16px 0 0;">
+      <h5 class="mb-0 text-white fw-bold">
+        <i class="fas fa-calendar-plus me-2"></i>Nueva Cita — {{ profesional.nombre }}
+      </h5>
+      <small class="text-white-50">{{ profesional.especialidad }}</small>
+    </div>
+    <div class="card-body px-4 py-4">
+
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="alert alert-{{ msg.tags }} border-0 shadow-sm">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-4">
+          <label class="form-label fw-bold text-dark">
+            <i class="fas fa-user me-1 text-primary"></i>Paciente
+          </label>
+          <select name="cliente" class="form-select" required>
+            <option value="">— Selecciona un paciente —</option>
+            {% for cliente in clientes %}
+              <option value="{{ cliente.id }}">{{ cliente.nombre }} — {{ cliente.email }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold text-dark">
+            <i class="fas fa-calendar me-1 text-primary"></i>Fecha
+          </label>
+          <input type="date" name="fecha" class="form-control" required
+                 min="{{ hoy|date:'Y-m-d' }}">
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold text-dark">
+            <i class="fas fa-clock me-1 text-primary"></i>Hora
+          </label>
+          <select name="hora" class="form-select" required>
+            <option value="">— Selecciona una hora —</option>
+            {% for h in horas %}
+              <option value="{{ h }}">{{ h }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="d-flex gap-3">
+          <button type="submit" class="btn btn-primary fw-bold px-4 shadow-sm">
+            <i class="fas fa-check me-1"></i>Confirmar Cita
+          </button>
+          <a href="{% url 'dashboard_profesional' %}" class="btn btn-outline-secondary px-4">
+            Cancelar
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

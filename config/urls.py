@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from usuarios.views import home_redirect  # <--- Cambio aquí
-from citas.views import agendar_cita, dashboard_cliente, dashboard_profesional, dashboard_admin, cambiar_estado_cita, eliminar_cita, obtener_horas_ocupadas  # <--- Asegúrate de importar todas las funciones necesarias
+from usuarios.views import home_redirect
+from citas.views import agendar_cita, agendar_cita_profesional, dashboard_cliente, dashboard_profesional, dashboard_admin, cambiar_estado_cita, eliminar_cita, obtener_horas_ocupadas, citas_por_fecha
 from usuarios.views import RegistroClienteView, CrearProfesionalView
 from citas import views
 
@@ -14,11 +14,12 @@ urlpatterns = [
     path('dashboard/', dashboard_cliente, name='dashboard_cliente'),
     path('registro/', RegistroClienteView.as_view(), name='registro'),
     path('dashboard/agendar/', agendar_cita, name='agendar_cita'),
-    path('dashboard/profesional/', dashboard_profesional, name='dashboard_profesional'), # Nueva
+    path('dashboard/profesional/', dashboard_profesional, name='dashboard_profesional'),
+    path('dashboard/profesional/agendar/', agendar_cita_profesional, name='agendar_cita_profesional'),
     path('panel/admin/', dashboard_admin, name='dashboard_admin'),
     path('panel/admin/crear-profesional/', CrearProfesionalView.as_view(), name='crear_profesional'),
     path('cita/estado/<int:cita_id>/<str:nuevo_estado>/', cambiar_estado_cita, name='cambiar_estado_cita'),
     path('cita/eliminar/<int:cita_id>/', eliminar_cita, name='eliminar_cita'),
     path('api/horas-ocupadas/', obtener_horas_ocupadas, name='obtener_horas_ocupadas'),
-
-]   
+    path('api/citas-por-fecha/', citas_por_fecha, name='citas_por_fecha'),
+]
