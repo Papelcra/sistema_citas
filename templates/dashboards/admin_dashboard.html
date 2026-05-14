@@ -1,133 +1,302 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
-        <div>
-            <h2 class="fw-bold text-dark mb-0">Panel de Control Administrativo</h2>
-            <p class="text-muted">Resumen operativo del sistema de salud</p>
-        </div>
-        <div class="text-end">
-            <span class="badge bg-light text-dark border p-2">
-                <i class="fas fa-calendar-day me-2 text-primary"></i>{% now "j \d\e F, Y" %}
-            </span>
-        </div>
-    </div>
+<style>
+    :root {
+        --primary-dark: #1e3a8a;
+        --accent-color: #3b82f6;
+    }
+    .admin-wrapper {
+        background-color: #f8fafc;
+        min-height: 100vh;
+        padding-top: 2rem;
+    }
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    .table-container {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    .nav-tabs-custom {
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .nav-tabs-custom .nav-link {
+        border: none;
+        color: #64748b;
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        position: relative;
+    }
+    .nav-tabs-custom .nav-link.active {
+        color: var(--primary-dark);
+        background: transparent;
+    }
+    .nav-tabs-custom .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--primary-dark);
+    }
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        margin-left: 4px;
+    }
+    .badge-soft-info { background: #e0f2fe; color: #0369a1; }
+    .badge-soft-success { background: #dcfce7; color: #15803d; }
+</style>
 
-    <div class="row g-4 mb-5 animate__animated animate__fadeInUp">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 p-3" style="border-left: 5px solid #3B82F6 !important;">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
-                        <i class="fas fa-calendar-check fa-2x text-primary"></i>
+<div class="admin-wrapper">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">Panel de Control General</h2>
+                <p class="text-muted small">Bienvenido, Administrador. Gestión de citas y usuarios.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'crear_profesional' %}" class="btn btn-primary rounded-pill shadow-sm">
+                    <i class="fas fa-user-plus me-2"></i>Nuevo Especialista
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card stat-card shadow-sm bg-white border-start border-primary border-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted fw-normal">Total Usuarios</h6>
+                                <h3 class="fw-bold mb-0">{{ total_usuarios }}</h3>
+                            </div>
+                            <div class="text-primary opacity-50"><i class="fas fa-users-cog fa-2x"></i></div>
+                        </div>
                     </div>
-                    <div>
-                        <h6 class="text-muted mb-0 small text-uppercase fw-bold">Total Citas</h6>
-                        <h2 class="fw-bold mb-0">{{ total_citas }}</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card shadow-sm bg-white border-start border-info border-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted fw-normal">Pacientes</h6>
+                                <h3 class="fw-bold mb-0">{{ total_clientes }}</h3>
+                            </div>
+                            <div class="text-info opacity-50"><i class="fas fa-user-injured fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card shadow-sm bg-white border-start border-success border-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted fw-normal">Especialistas</h6>
+                                <h3 class="fw-bold mb-0">{{ total_profesionales }}</h3>
+                            </div>
+                            <div class="text-success opacity-50"><i class="fas fa-user-md fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card shadow-sm bg-white border-start border-warning border-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted fw-normal">Citas Registradas</h6>
+                                <h3 class="fw-bold mb-0">{{ total_citas }}</h3>
+                            </div>
+                            <div class="text-warning opacity-50"><i class="fas fa-calendar-alt fa-2x"></i></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 p-3" style="border-left: 5px solid #10B981 !important;">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
-                        <i class="fas fa-user-md fa-2x text-success"></i>
+        <div class="card table-container shadow-sm border-0">
+            <div class="card-header bg-white p-0">
+                <ul class="nav nav-tabs nav-tabs-custom" id="adminTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="profesionales-tab" data-bs-toggle="tab" data-bs-target="#profesionales-pane">
+                            <i class="fas fa-stethoscope me-2"></i>Gestión Médica
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="pacientes-tab" data-bs-toggle="tab" data-bs-target="#pacientes-pane">
+                            <i class="fas fa-user-friends me-2"></i>Pacientes
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card-body p-0">
+                <div class="tab-content" id="adminTabsContent">
+                    
+                    <div class="tab-pane fade show active" id="profesionales-pane" role="tabpanel">
+                        <div class="p-4">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4">Profesional</th>
+                                            <th>Especialidad</th>
+                                            <th>Usuario Relacionado</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for p in profesionales_lista %}
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="fw-bold text-dark">{{ p.nombre }}</div>
+                                            </td>
+                                            <td><span class="badge badge-soft-info px-3 py-2">{{ p.especialidad }}</span></td>
+                                            <td><code>@{{ p.user.username }}</code></td>
+                                            <td class="text-center">
+                                                <a href="{% url 'editar_profesional' p.id %}" class="btn btn-outline-primary btn-action" title="Editar">
+                                                    <i class="fas fa-pen-alt"></i>
+                                                </a>
+                                                <button onclick="handleDelete('{% url 'eliminar_profesional' p.id %}', '{{ p.nombre }}')" class="btn btn-outline-danger btn-action" title="Eliminar">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h6 class="text-muted mb-0 small text-uppercase fw-bold">Profesionales</h6>
-                        <h2 class="fw-bold mb-0">{{ total_profesionales }}</h2>
+
+                    <div class="tab-pane fade" id="pacientes-pane" role="tabpanel">
+                        <div class="p-4">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4">Nombre del Paciente</th>
+                                            <th>Correo Electrónico</th>
+                                            <th>Teléfono</th>
+                                            <th class="text-center">Operaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for c in clientes_lista %}
+                                        <tr>
+                                            <td class="ps-4 text-dark fw-medium">{{ c.nombre }}</td>
+                                            <td>{{ c.email }}</td>
+                                            <td>{{ c.telefono }}</td>
+                                            <td class="text-center">
+                                                <button onclick="handleDelete('{% url 'eliminar_cliente' c.id %}', '{{ c.nombre }}')" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                                    <i class="fas fa-user-minus me-1"></i>Remover
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5 text-muted">
+                                                <i class="fas fa-info-circle me-2"></i>No hay pacientes registrados aún.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="tab-pane fade" id="reportes-pane" role="tabpanel">
+                        <div class="p-4">                
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha/Hora</th>
+                                            <th>Paciente</th>
+                                            <th>Médico</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for cita in citas_recientes %}
+                                        <tr>
+                                            <td>{{ cita.fecha|date:"d M" }} - {{ cita.hora|time:"H:i" }}</td>
+                                            <td>{{ cita.cliente.nombre }}</td>
+                                            <td>{{ cita.profesional.nombre }}</td>
+                                            <td>
+                                                {% if cita.estado == 'CON' %}
+                                                    <span class="text-success small fw-bold">Confirmada</span>
+                                                {% else %}
+                                                    <span class="text-warning small fw-bold">Pendiente</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 p-3" style="border-left: 5px solid #F59E0B !important;">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
-                        <i class="fas fa-users fa-2x text-warning"></i>
-                    </div>
-                    <div>
-                        <h6 class="text-muted mb-0 small text-uppercase fw-bold">Pacientes</h6>
-                        <h2 class="fw-bold mb-0">{{ total_clientes }}</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-lg-4 animate__animated animate__fadeInLeft">
-            <div class="card border-0 shadow-sm p-4 mb-4">
-                <h5 class="fw-bold mb-4"><i class="fas fa-bolt me-2 text-primary"></i>Acciones Rápidas</h5>
-                <div class="d-grid gap-3">
-                    <a href="{% url 'crear_profesional' %}" class="btn btn-primary py-3 fw-bold">
-                        <i class="fas fa-plus-circle me-2"></i>Añadir Profesional
-                    </a>
-                    <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-secondary py-2">
-                        <i class="fas fa-sync-alt me-2"></i>Actualizar Datos
-                    </a>
-                </div>
-                
-                <div class="mt-5 p-3 bg-light rounded-3">
-                    <h6 class="fw-bold small mb-3">Estado del Sistema</h6>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="small">Ocupación Mensual</span>
-                        <span class="small fw-bold">85%</span>
-                    </div>
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-8 animate__animated animate__fadeInRight">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="fw-bold mb-0">Personal Médico Registrado</h5>
-                </div>
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="border-0 px-4">Médico</th>
-                                <th class="border-0">Especialidad</th>
-                                <th class="border-0">Usuario</th>
-                                <th class="border-0 text-end px-4">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for prof in profesionales_lista %}
-                            <tr>
-                                <td class="px-4">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
-                                            {{ prof.nombre|slice:":1" }}
-                                        </div>
-                                        <span class="fw-bold">{{ prof.nombre }}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-info bg-opacity-10 text-info px-3">{{ prof.especialidad }}</span>
-                                </td>
-                                <td class="text-muted small">{{ prof.user.username }}</td>
-                                <td class="text-end px-4">
-                                    <span class="text-success small"><i class="fas fa-circle me-1" style="font-size: 8px;"></i> Activo</span>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center py-5 text-muted">No hay profesionales registrados aún.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="mt-5 text-center text-muted">
+            <small>© 2026 Sistema de Gestión Médica - Cundinamarca</small>
         </div>
     </div>
 </div>
+
+<script>
+    function handleDelete(url, nombre) {
+        if (confirm(`ATENCIÓN: ¿Está seguro de eliminar a "${nombre}"? Esta acción no se puede deshacer y afectará los registros históricos.`)) {
+            window.location.href = url;
+        }
+    }
+
+    // Mantener la pestaña activa después de recargar
+    document.addEventListener("DOMContentLoaded", function() {
+        let activeTab = localStorage.getItem('adminActiveTab');
+        if (activeTab) {
+            let tabTrigger = new bootstrap.Tab(document.querySelector(`#${activeTab}`));
+            tabTrigger.show();
+        }
+        
+        let tabLinks = document.querySelectorAll('button[data-bs-toggle="tab"]');
+        tabLinks.forEach(link => {
+            link.addEventListener('shown.bs.tab', function(e) {
+                localStorage.setItem('adminActiveTab', e.target.id);
+            });
+        });
+    });
+</script>
 {% endblock %}

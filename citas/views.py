@@ -170,6 +170,8 @@ def dashboard_admin(request):
         'total_profesionales': Profesional.objects.count(),
         'total_citas': Cita.objects.count(),
         'profesionales_lista': Profesional.objects.all(),
+        # ESTA ES LA LÍNEA CLAVE:
+        'clientes_lista': Cliente.objects.all().order_by('nombre'), 
     }
     return render(request, 'dashboards/admin_dashboard.html', context)
 
@@ -290,3 +292,44 @@ def agendar_cita_profesional(request):
         'horas': horas,
     }
     return render(request, 'citas/agendar_profesional.html', context)
+
+
+# ─── GESTIÓN DE CLIENTES (ADMIN) ──────────────────────────────────────────────
+@staff_member_required
+def listar_clientes(request):
+    clientes = Cliente.objects.all().order_by('nombre')
+    return render(request, 'dashboards/admin_clientes.html', {'clientes': clientes})
+
+
+# ─── GESTIÓN DE PROFESIONALES (ADMIN) ─────────────────────────────────────────
+@staff_member_required
+def editar_profesional(request, profesional_id):
+    profesional = get_object_or_404(Profesional, id=profesional_id)
+    if request.method == 'POST':
+        form = RegistroProfesionalForm(request.POST, instance=profesional)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profesional actualizado.")
+            return redirect('dashboard_admin')
+    else:
+        form = RegistroProfesionalForm(instance=profesional)
+    return render(request, 'dashboards/admin_crear_profesional.html', {'form': form, 'editando': True})
+
+@staff_member_required
+def eliminar_profesional(request, profesional_id):
+    profesional = get_object_or_404(Profesional, id=profesional_id)
+    # Eliminamos el usuario asociado para no dejar basura en la base de datos
+    if profesional.user:
+        profesional.user.delete()
+    profesional.delete()
+    messages.success(request, "Profesional eliminado correctamente.")
+    return redirect('dashboard_admin')
+
+@staff_member_required
+def eliminar_cliente(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+    # Buscamos el usuario por email para borrar su acceso también
+    User.objects.filter(email=cliente.email).delete()
+    cliente.delete()
+    messages.success(request, "Paciente eliminado correctamente.")
+    return redirect('dashboard_admin')
